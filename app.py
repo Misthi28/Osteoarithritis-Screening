@@ -8,8 +8,26 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from predict import predict_oa_risk
-from utils.translations import TRANSLATIONS
-from utils.validation import validate_patient
+try:
+    from utils.translations import TRANSLATIONS
+    from utils.validation import validate_patient
+except ModuleNotFoundError:
+    # Fallback for deployments where only app.py and predict.py were uploaded.
+    TRANSLATIONS = {
+        "English": {},
+        "हिन्दी": {"title": "जोड़ स्वास्थ्य स्क्रीनिंग", "patient": "रोगी की जानकारी", "gait": "चाल इनपुट", "results": "परिणाम", "next": "आगे बढ़ें", "save": "रिकॉर्ड सहेजें"},
+        "অসমীয়া": {"title": "গাঁঠি স্বাস্থ্য স্ক্ৰীনিং", "patient": "ৰোগীৰ তথ্য", "gait": "খোজৰ ইনপুট", "results": "ফলাফল", "next": "আগবাঢ়ক", "save": "ৰেকৰ্ড সংৰক্ষণ কৰক"},
+    }
+
+    def validate_patient(patient: dict) -> list[str]:
+        errors = []
+        if not patient.get("consent"):
+            errors.append("Consent is required before screening.")
+        if patient.get("pain_score", 0) > 0 and not patient.get("joints"):
+            errors.append("Select at least one painful joint when pain is above zero.")
+        if not 18 <= patient.get("age", 0) <= 100:
+            errors.append("Age must be between 18 and 100 years.")
+        return errors
 
 st.set_page_config(page_title="Joint Health Screening", page_icon="🦵", layout="centered")
 ROOT = Path(__file__).parent

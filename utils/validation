@@ -1,0 +1,10 @@
+def validate_patient(patient: dict) -> list[str]:
+    errors = []
+    if not patient.get("consent"):
+        errors.append("Consent is required before screening.")
+    if patient.get("pain_score", 0) > 0 and not patient.get("joints"):
+        errors.append("Select at least one painful joint when pain is above zero.")
+    if not 18 <= patient.get("age", 0) <= 100:
+        errors.append("Age must be between 18 and 100 years.")
+    return errors
+
